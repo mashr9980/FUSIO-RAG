@@ -17,9 +17,7 @@ if __name__ == "__main__":
         ws_ping_timeout=None,
         loop="auto",
         ws="websockets",
-        log_level="info",
-        ssl_certfile='certificate.crt',
-        ssl_keyfile='private.key'
+        log_level="info"
     )
     
     # Start server
