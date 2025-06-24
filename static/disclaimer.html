@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scott's AI Assistant - Disclaimer</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Light Theme Variables */
+            --primary-color: #4E54C8;
+            --primary-gradient: linear-gradient(to right, #4E54C8, #8F94FB);
+            --secondary-color: #8F94FB;
+            --accent-color: #FF6B6B;
+            --text-color: #333333;
+            --light-text: #6c757d;
+            --bg-color: #f5f7ff;
+            --card-bg: #ffffff;
+            --light-bg: #f8f9fa;
+            --card-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            --border-radius: 16px;
+            --border-color: #eaeaea;
+        }
+        
+        [data-theme="dark"] {
+            /* Dark Theme Variables */
+            --primary-color: #6366F1;
+            --primary-gradient: linear-gradient(to right, #6366F1, #8B5CF6);
+            --secondary-color: #8B5CF6;
+            --accent-color: #F87171;
+            --text-color: #E5E7EB;
+            --light-text: #9CA3AF;
+            --bg-color: #111827;
+            --card-bg: #1F2937;
+            --light-bg: #374151;
+            --card-shadow: 0 10px 20px rgba(0, 0, 0, 0.25);
+            --border-color: #4B5563;
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            padding: 0;
+            margin: 0;
+            transition: background-color 0.3s ease, color 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .disclaimer-container {
+            max-width: 800px;
+            width: 100%;
+            margin: 40px auto;
+            padding: 0;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+            font-size: 2.2rem;
+        }
+        
+        .header p {
+            color: var(--light-text);
+            font-size: 1.1rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .disclaimer-card {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            box-shadow: var(--card-shadow);
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .card-header {
+            background: var(--primary-gradient);
+            color: white;
+            padding: 20px 25px;
+            font-weight: 600;
+        }
+        
+        .card-header h2 {
+            margin: 0;
+            font-size: 1.25rem;
+            display: flex;
+            align-items: center;
+        }
+        
+        .card-body {
+            padding: 25px;
+            max-height: 60vh;
+            overflow-y: auto;
+        }
+        
+        .card-footer {
+            padding: 20px 25px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: var(--light-bg);
+        }
+        
+        .disclaimer-section {
+            margin-bottom: 20px;
+        }
+        
+        .disclaimer-section h3 {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--primary-color);
+            font-size: 1.1rem;
+        }
+        
+        .disclaimer-section p, .disclaimer-section li, .consent-item p {
+            font-size: 0.9rem;
+        }
+        
+        .disclaimer-section ul {
+            list-style-type: none;
+            padding-left: 5px;
+        }
+        
+        .disclaimer-section ul li {
+            position: relative;
+            padding-left: 20px;
+            margin-bottom: 6px;
+        }
+        
+        .disclaimer-section ul li:before {
+            content: "•";
+            color: var(--primary-color);
+            position: absolute;
+            left: 0;
+            font-weight: bold;
+        }
+        
+        .contact-info {
+            background-color: rgba(78, 84, 200, 0.1);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+        
+        .contact-info i {
+            color: var(--primary-color);
+            margin-right: 5px;
+        }
+        
+        .contact-info p {
+            font-size: 0.85rem;
+            margin-bottom: 5px;
+        }
+        
+        .effective-date {
+            font-size: 0.8rem;
+            color: var(--light-text);
+            text-align: center;
+            margin-bottom: 5px;
+        }
+        
+        .disclaimer-accept {
+            display: flex;
+            align-items: center;
+        }
+        
+        .disclaimer-accept label {
+            margin-left: 10px;
+            font-size: 0.85rem;
+            cursor: pointer;
+        }
+        
+        .disclaimer-confirm {
+            background: var(--primary-gradient);
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 30px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .disclaimer-confirm:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .disclaimer-confirm:not(:disabled):hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(78, 84, 200, 0.3);
+        }
+        
+        /* Theme Toggle Button */
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--primary-gradient);
+            border: none;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+        
+        .theme-toggle:hover {
+            transform: scale(1.05);
+        }
+        
+        .theme-toggle i {
+            font-size: 1.2rem;
+        }
+        
+        .warning-icon {
+            color: #dc3545;
+            margin-right: 5px;
+        }
+        
+        .consent-item {
+            margin-bottom: 10px;
+            display: flex;
+            align-items: flex-start;
+        }
+        
+        .consent-item i {
+            color: var(--primary-color);
+            margin-right: 8px;
+            margin-top: 3px;
+        }
+        
+        /* Mobile responsiveness */
+        @media (max-width: 768px) {
+            .disclaimer-container {
+                width: 95%;
+                margin: 20px auto;
+            }
+            
+            .header h1 {
+                font-size: 1.8rem;
+            }
+            
+            .card-body {
+                max-height: 65vh;
+            }
+            
+            .card-footer {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .disclaimer-accept {
+                width: 100%;
+            }
+            
+            .disclaimer-confirm {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <button id="themeToggle" class="theme-toggle" aria-label="Toggle theme">
+        <i class="fas fa-moon"></i>
+    </button>
+    
+    <div class="disclaimer-container">
+        <div class="header">
+            <h1><i class="fas fa-robot me-2"></i>Scott's AI Assistant</h1>
+            <p>Your AI-powered financial education assistant</p>
+            <p style="font-size: 0.85rem; color: var(--light-text);">Effective Date: December 11, 2024</p>
+            <p style="font-size: 0.85rem; color: var(--light-text);">Address: 516 Route 9, Waretown, NJ 08758</p>
+            <p style="font-size: 0.85rem; color: var(--light-text);">📞 (609) 489-5200 | 📧 info@mcleanadvisorygroup.com</p>
+        </div>
+        
+        <div class="disclaimer-card">
+            <div class="card-header">
+                <h2><i class="fas fa-exclamation-triangle me-2"></i>Terms of Use & Disclaimer</h2>
+            </div>
+            
+            <div class="card-body">
+                <p style="font-size: 0.95rem;">Welcome to Scott's AI Assistant. This AI Assistant, provided by McLean Advisory Group, is here to educate and guide you on general financial, estate, legal, and tax concepts. It is designed to be helpful—but it is not a substitute for personalized advice from a licensed professional. Please read this full disclaimer before using the tool.</p>
+                
+                <div class="disclaimer-section">
+                    <h3>For Educational Purposes Only</h3>
+                    <p>Scott's AI Bot is intended solely for general educational and informational use. While it may offer insights and examples on important financial topics, the AI:</p>
+                    <ul>
+                        <li>Does not evaluate your personal financial situation</li>
+                        <li>Does not review your estate or legal documents</li>
+                        <li>Does not assess your tax liabilities</li>
+                        <li>May provide information that is incomplete, outdated, or factually incorrect</li>
+                    </ul>
+                </div>
+                
+                <div class="disclaimer-section">
+                    <h3>No Professional Advice or Client Relationship</h3>
+                    <p>Scott's AI Assistant does not provide:</p>
+                    <ul>
+                        <li>Financial advice</li>
+                        <li>Tax advice</li>
+                        <li>Legal advice</li>
+                        <li>Investment recommendations</li>
+                    </ul>
+                    <p>Using this AI does not establish a client, advisory, legal, or fiduciary relationship between you and McLean Advisory Group. You must speak directly with a licensed advisor from our team before making any financial or legal decisions.</p>
+                </div>
+                
+                <div class="disclaimer-section">
+                    <h3>Accuracy & Risk Notice</h3>
+                    <p>This AI tool uses large language models trained on patterns—not human judgment. As such:</p>
+                    <ul>
+                        <li>It cannot "understand" your personal goals or full financial context</li>
+                        <li>It may occasionally generate responses that are confusing, inaccurate, or misleading</li>
+                        <li>You must verify all AI-generated information before taking any action</li>
+                    </ul>
+                    <p><i class="fas fa-ban warning-icon"></i><strong>Do not rely on the AI Bot as a source of truth or make any decisions without consulting McLean Advisory Group directly.</strong></p>
+                </div>
+                
+                <div class="disclaimer-section">
+                    <h3>Liability Disclaimer</h3>
+                    <p>McLean Advisory Group and its affiliates expressly disclaim all liability for:</p>
+                    <ul>
+                        <li>Errors or omissions in AI-generated content</li>
+                        <li>Actions taken or not taken based on AI responses</li>
+                        <li>Any direct, indirect, incidental, or consequential damages arising from use of this tool</li>
+                    </ul>
+                    <p>All use of this AI Assistant is at your own risk.</p>
+                </div>
+                
+                <div class="disclaimer-section">
+                    <h3>Subject to Change</h3>
+                    <p>This disclaimer and terms may be updated at any time without notice. Please check periodically for the latest version.</p>
+                </div>
+                
+                <div class="disclaimer-section">
+                    <h3>Consent & Confirmation</h3>
+                    <p>To continue using Scott's AI Assistant, you must agree to the following:</p>
+                    <div class="consent-item">
+                        <i class="fas fa-check-square"></i>
+                        <p>I confirm that I have read, understood, and agree to the Terms of Use and Disclaimer above.</p>
+                    </div>
+                    <div class="consent-item">
+                        <i class="fas fa-check-square"></i>
+                        <p>I understand that Scott's AI Assistant is not providing personalized advice and that I must consult with a licensed McLean Advisory Group advisor before making any financial, tax, legal, or investment decisions.</p>
+                    </div>
+                </div>
+                
+                <div class="disclaimer-section">
+                    <h3>Questions?</h3>
+                    <p>If you have questions about anything you've read, or you're ready for personal guidance, we're here to help:</p>
+                    
+                    <div class="contact-info">
+                        <p><i class="fas fa-map-marker-alt"></i> McLean Advisory Group<br>516 Route 9, Suite A, Waretown, NJ 08758</p>
+                        <p><i class="fas fa-phone-alt"></i> (609) 489-5200</p>
+                        <p><i class="fas fa-envelope"></i> info@mcleanadvisorygroup.com</p>
+                        <p><i class="fas fa-globe"></i> www.McLeanAdvisoryGroup.com</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card-footer">
+                <div class="disclaimer-accept">
+                    <input type="checkbox" id="acceptDisclaimer" class="form-check-input">
+                    <label for="acceptDisclaimer">I have read, understood, and agree to this Disclaimer in full.</label>
+                </div>
+                <button id="confirmDisclaimer" class="disclaimer-confirm" disabled>Continue to Advisor</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS and dependencies -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const themeToggle = document.getElementById('themeToggle');
+            const acceptDisclaimerCheckbox = document.getElementById('acceptDisclaimer');
+            const confirmDisclaimerBtn = document.getElementById('confirmDisclaimer');
+            
+            // Initialize theme
+            initTheme();
+            
+            // Checkbox change handler
+            acceptDisclaimerCheckbox.addEventListener('change', function() {
+                confirmDisclaimerBtn.disabled = !this.checked;
+            });
+            
+            // Continue button click handler
+            confirmDisclaimerBtn.addEventListener('click', function() {
+                if (acceptDisclaimerCheckbox.checked) {
+                    // Store acceptance in localStorage
+                    localStorage.setItem('disclaimerAccepted', 'true');
+                    localStorage.setItem('disclaimerAcceptedTimestamp', Date.now());
+                    document.cookie = "disclaimer_accepted=true; path=/; max-age=86400";
+                    // Redirect to the chatbot page
+                    window.location.href = 'chatbot';
+                }
+            });
+            
+            // Theme toggle
+            themeToggle.addEventListener('click', toggleTheme);
+            
+            // Theme functions
+            function initTheme() {
+                // Check for saved theme preference or use preferred color scheme
+                const savedTheme = localStorage.getItem('theme');
+                const prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                
+                // Set initial theme
+                if (savedTheme) {
+                    document.documentElement.setAttribute('data-theme', savedTheme);
+                    updateThemeIcon(savedTheme);
+                } else if (prefersDarkScheme) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                    updateThemeIcon('dark');
+                }
+            }
+            
+            function toggleTheme() {
+                const currentTheme = document.documentElement.getAttribute('data-theme');
+                const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                
+                // Set the new theme
+                document.documentElement.setAttribute('data-theme', newTheme);
+                localStorage.setItem('theme', newTheme);
+                
+                // Update the icon
+                updateThemeIcon(newTheme);
+            }
+            
+            function updateThemeIcon(theme) {
+                const icon = themeToggle.querySelector('i');
+                if (theme === 'dark') {
+                    icon.className = 'fas fa-sun';
+                } else {
+                    icon.className = 'fas fa-moon';
+                }
+            }
+        });
+    </script>
+</body>
+</html>

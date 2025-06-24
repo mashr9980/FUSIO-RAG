@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Financial Document Assistant</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #e74c3c;
+            --light-color: #ecf0f1;
+            --dark-color: #34495e;
+        }
+        
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .app-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: var(--primary-color);
+        }
+        
+        .upload-section {
+            background-color: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+        
+        .chat-section {
+            background-color: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            min-height: 500px;
+            display: none;
+        }
+        
+        .messages-container {
+            height: 400px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+            padding: 15px;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            background-color: #f8f9fa;
+        }
+        
+        .message {
+            margin-bottom: 15px;
+            padding: 10px 15px;
+            border-radius: 10px;
+            max-width: 80%;
+        }
+        
+        .user-message {
+            background-color: var(--secondary-color);
+            color: white;
+            margin-left: auto;
+        }
+        
+        .bot-message {
+            background-color: var(--light-color);
+            color: var(--dark-color);
+        }
+        
+        .typing-indicator {
+            display: inline-block;
+            padding: 10px 15px;
+            background-color: #e9ecef;
+            border-radius: 10px;
+        }
+        
+        .typing-indicator span {
+            height: 10px;
+            width: 10px;
+            float: left;
+            margin: 0 1px;
+            background-color: #9E9EA1;
+            display: block;
+            border-radius: 50%;
+            opacity: 0.4;
+        }
+        
+        .typing-indicator span:nth-of-type(1) {
+            animation: 1s blink infinite 0.3333s;
+        }
+        
+        .typing-indicator span:nth-of-type(2) {
+            animation: 1s blink infinite 0.6666s;
+        }
+        
+        .typing-indicator span:nth-of-type(3) {
+            animation: 1s blink infinite 0.9999s;
+        }
+        
+        @keyframes blink {
+            50% {
+                opacity: 1;
+            }
+        }
+        
+        .upload-form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .drop-zone {
+            border: 2px dashed #ccc;
+            border-radius: 5px;
+            padding: 40px;
+            text-align: center;
+            transition: all 0.3s;
+            background-color: #f8f9f8;
+        }
+        
+        .drop-zone:hover, .drop-zone.dragover {
+            border-color: var(--secondary-color);
+            background-color: #eaf2f8;
+        }
+        
+        .drop-zone i {
+            font-size: 48px;
+            color: #aaa;
+            margin-bottom: 15px;
+        }
+        
+        .status-container {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            background-color: #f8f9fa;
+            display: none;
+        }
+        
+        .progress-container {
+            margin-top: 10px;
+        }
+        
+        .document-selection {
+            margin-bottom: 20px;
+        }
+        
+        .btn-primary {
+            background-color: var(--secondary-color);
+            border-color: var(--secondary-color);
+        }
+        
+        .btn-primary:hover {
+            background-color: #2980b9;
+            border-color: #2980b9;
+        }
+        
+        .btn-outline-primary {
+            color: var(--secondary-color);
+            border-color: var(--secondary-color);
+        }
+        
+        .btn-outline-primary:hover {
+            background-color: var(--secondary-color);
+            color: white;
+        }
+        
+        .document-item {
+            padding: 10px;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .document-item:hover, .document-item.active {
+            background-color: #e9ecef;
+            border-color: var(--secondary-color);
+        }
+        
+        .document-item.active {
+            border-left: 4px solid var(--secondary-color);
+        }
+        
+        .document-status {
+            float: right;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .status-processing {
+            background-color: #ffeeba;
+            color: #856404;
+        }
+        
+        .status-completed {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        
+        .status-failed {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        
+        #toggleChatBtn {
+            display: none;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .upload-section, .chat-section {
+                padding: 20px;
+            }
+            
+            .message {
+                max-width: 90%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <div class="header">
+            <h1><i class="fas fa-robot me-2"></i>Financial Document Assistant</h1>
+            <p class="lead">Upload your financial documents and chat with a financial advisor AI</p>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-4">
+                <div class="upload-section">
+                    <h3><i class="fas fa-file-upload me-2"></i>Document Upload</h3>
+                    <form id="uploadForm" class="upload-form">
+                        <div class="drop-zone" id="dropZone">
+                            <i class="fas fa-file-pdf"></i>
+                            <p>Drag & drop your PDF here or click to browse</p>
+                            <input type="file" id="fileInput" accept=".pdf" style="display: none;">
+                            <button type="button" class="btn btn-outline-primary" id="browseBtn">
+                                <i class="fas fa-folder-open me-2"></i>Browse Files
+                            </button>
+                        </div>
+                        <button type="submit" class="btn btn-primary" id="uploadBtn" disabled>
+                            <i class="fas fa-upload me-2"></i>Upload Document
+                        </button>
+                    </form>
+                    
+                    <div class="status-container" id="statusContainer">
+                        <h5>Processing Status</h5>
+                        <div class="progress-container">
+                            <div class="progress">
+                                <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                                     role="progressbar" 
+                                     style="width: 0%;" 
+                                     id="progressBar">0%</div>
+                            </div>
+                        </div>
+                        <p class="mt-2" id="statusMessage">Initializing...</p>
+                    </div>
+                </div>
+                
+                <div class="document-selection">
+                    <h4><i class="fas fa-folder me-2"></i>Your Documents</h4>
+                    <div id="documentsList">
+                        <!-- Documents will be added here dynamically -->
+                    </div>
+                </div>
+                
+                <button id="toggleChatBtn" class="btn btn-primary w-100 d-md-none mb-3">
+                    <i class="fas fa-comments me-2"></i>Show Chat
+                </button>
+            </div>
+            
+            <div class="col-md-8">
+                <div class="chat-section" id="chatSection">
+                    <h3><i class="fas fa-comments me-2"></i>Chat with Your Document</h3>
+                    
+                    <div class="messages-container" id="messagesContainer">
+                        <div class="message bot-message">
+                            <p>Hello! I'm Scott S. McLean, a financial advisor with over 37 years of experience. 
+                               I can answer your questions about the document you've uploaded. What would you like to know?</p>
+                        </div>
+                    </div>
+                    
+                    <div class="input-group">
+                        <input type="text" id="messageInput" class="form-control" placeholder="Type your question here...">
+                        <button class="btn btn-primary" id="sendMessageBtn">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS and dependencies -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // DOM elements
+            const fileInput = document.getElementById('fileInput');
+            const browseBtn = document.getElementById('browseBtn');
+            const uploadBtn = document.getElementById('uploadBtn');
+            const uploadForm = document.getElementById('uploadForm');
+            const dropZone = document.getElementById('dropZone');
+            const statusContainer = document.getElementById('statusContainer');
+            const progressBar = document.getElementById('progressBar');
+            const statusMessage = document.getElementById('statusMessage');
+            const documentsList = document.getElementById('documentsList');
+            const chatSection = document.getElementById('chatSection');
+            const messagesContainer = document.getElementById('messagesContainer');
+            const messageInput = document.getElementById('messageInput');
+            const sendMessageBtn = document.getElementById('sendMessageBtn');
+            const toggleChatBtn = document.getElementById('toggleChatBtn');
+            
+            // App state
+            const documents = {};
+            let activeDocumentId = null;
+            let socket = null;
+            
+            // Event listeners for file upload
+            browseBtn.addEventListener('click', () => fileInput.click());
+            
+            fileInput.addEventListener('change', (e) => {
+                if (fileInput.files.length > 0) {
+                    uploadBtn.disabled = false;
+                    dropZone.querySelector('p').textContent = `Selected: ${fileInput.files[0].name}`;
+                }
+            });
+            
+            // Drag and drop functionality
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                dropZone.addEventListener(eventName, preventDefaults, false);
+            });
+            
+            function preventDefaults(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+            
+            ['dragenter', 'dragover'].forEach(eventName => {
+                dropZone.addEventListener(eventName, () => {
+                    dropZone.classList.add('dragover');
+                }, false);
+            });
+            
+            ['dragleave', 'drop'].forEach(eventName => {
+                dropZone.addEventListener(eventName, () => {
+                    dropZone.classList.remove('dragover');
+                }, false);
+            });
+            
+            dropZone.addEventListener('drop', (e) => {
+                const dt = e.dataTransfer;
+                fileInput.files = dt.files;
+                
+                if (fileInput.files.length > 0) {
+                    uploadBtn.disabled = false;
+                    dropZone.querySelector('p').textContent = `Selected: ${fileInput.files[0].name}`;
+                }
+            });
+            
+            // Form submission handling
+            uploadForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                
+                if (!fileInput.files[0]) {
+                    alert('Please select a file first.');
+                    return;
+                }
+                
+                if (!fileInput.files[0].name.toLowerCase().endsWith('.pdf')) {
+                    alert('Please select a PDF file.');
+                    return;
+                }
+                
+                uploadDocument(fileInput.files[0]);
+            });
+            
+            // Chat functionality
+            sendMessageBtn.addEventListener('click', sendMessage);
+            
+            messageInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    sendMessage();
+                }
+            });
+            
+            toggleChatBtn.addEventListener('click', () => {
+                if (chatSection.style.display === 'none' || chatSection.style.display === '') {
+                    chatSection.style.display = 'block';
+                    toggleChatBtn.innerHTML = '<i class="fas fa-folder me-2"></i>Show Documents';
+                } else {
+                    chatSection.style.display = 'none';
+                    toggleChatBtn.innerHTML = '<i class="fas fa-comments me-2"></i>Show Chat';
+                }
+            });
+            
+            // Initialize and load documents from localStorage
+            init();
+            
+            // Functions
+            function init() {
+                // Load saved documents from localStorage
+                const savedDocuments = localStorage.getItem('documents');
+                if (savedDocuments) {
+                    Object.assign(documents, JSON.parse(savedDocuments));
+                    renderDocumentsList();
+                }
+                
+                // Check if there's an active document
+                const lastActiveDoc = localStorage.getItem('activeDocument');
+                if (lastActiveDoc && documents[lastActiveDoc]) {
+                    selectDocument(lastActiveDoc);
+                }
+            }
+            
+            function uploadDocument(file) {
+                // Show status container
+                statusContainer.style.display = 'block';
+                uploadBtn.disabled = true;
+                
+                // Create FormData object
+                const formData = new FormData();
+                formData.append('file', file);
+                
+                // Update UI
+                progressBar.style.width = '10%';
+                progressBar.textContent = '10%';
+                statusMessage.textContent = 'Uploading document...';
+                
+                // Send API request
+                fetch('https://127.0.0.1:9100/api/documents', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    const documentId = data.document_id;
+                    
+                    // Store document info
+                    documents[documentId] = {
+                        id: documentId,
+                        filename: file.name,
+                        status: 'processing',
+                        uploadedAt: new Date().toISOString()
+                    };
+                    
+                    // Save to localStorage
+                    saveDocuments();
+                    
+                    // Update UI
+                    renderDocumentsList();
+                    progressBar.style.width = '50%';
+                    progressBar.textContent = '50%';
+                    statusMessage.textContent = 'Document uploaded. Processing...';
+                    
+                    // Poll for status
+                    pollDocumentStatus(documentId);
+                })
+                .catch(error => {
+                    console.error('Error uploading document:', error);
+                    statusMessage.textContent = `Error: ${error.message}`;
+                    statusMessage.style.color = 'red';
+                    uploadBtn.disabled = false;
+                });
+            }
+            
+            function pollDocumentStatus(documentId) {
+                const checkStatus = () => {
+                    fetch(`https://127.0.0.1:9100/api/documents/${documentId}/status`)
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error(`HTTP error! Status: ${response.status}`);
+                            }
+                            return response.json();
+                        })
+                        .then(data => {
+                            // Update document status
+                            documents[documentId].status = data.status;
+                            documents[documentId].chunksCount = data.chunks_count;
+                            documents[documentId].createdAt = data.created_at;
+                            
+                            if (data.error) {
+                                documents[documentId].error = data.error;
+                            }
+                            
+                            saveDocuments();
+                            renderDocumentsList();
+                            
+                            // Update progress UI
+                            if (data.status === 'processing') {
+                                progressBar.style.width = '75%';
+                                progressBar.textContent = '75%';
+                                statusMessage.textContent = 'Processing document...';
+                                
+                                // Continue polling
+                                setTimeout(checkStatus, 2000);
+                            } else if (data.status === 'completed') {
+                                progressBar.style.width = '100%';
+                                progressBar.textContent = '100%';
+                                statusMessage.textContent = 'Document processing completed!';
+                                
+                                // Reset form
+                                resetUploadForm();
+                                
+                                // Select this document
+                                selectDocument(documentId);
+                            } else if (data.status === 'failed') {
+                                progressBar.style.width = '100%';
+                                progressBar.classList.remove('bg-primary');
+                                progressBar.classList.add('bg-danger');
+                                statusMessage.textContent = `Processing failed: ${data.error || 'Unknown error'}`;
+                                statusMessage.style.color = 'red';
+                                
+                                // Reset form
+                                resetUploadForm();
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error checking document status:', error);
+                            statusMessage.textContent = `Error checking status: ${error.message}`;
+                            statusMessage.style.color = 'red';
+                            
+                            // Try again if still processing
+                            if (documents[documentId].status === 'processing') {
+                                setTimeout(checkStatus, 5000);
+                            }
+                        });
+                };
+                
+                // Start polling
+                checkStatus();
+            }
+            
+            function resetUploadForm() {
+                setTimeout(() => {
+                    fileInput.value = '';
+                    dropZone.querySelector('p').textContent = 'Drag & drop your PDF here or click to browse';
+                    uploadBtn.disabled = true;
+                    
+                    // Hide status after 3 seconds
+                    setTimeout(() => {
+                        statusContainer.style.display = 'none';
+                        progressBar.style.width = '0%';
+                        progressBar.textContent = '0%';
+                        progressBar.classList.remove('bg-danger');
+                        progressBar.classList.add('bg-primary');
+                        statusMessage.textContent = 'Initializing...';
+                        statusMessage.style.color = '';
+                    }, 3000);
+                }, 1000);
+            }
+            
+            function renderDocumentsList() {
+                documentsList.innerHTML = '';
+                
+                const sortedDocuments = Object.values(documents).sort((a, b) => {
+                    return new Date(b.uploadedAt || b.createdAt) - new Date(a.uploadedAt || a.createdAt);
+                });
+                
+                if (sortedDocuments.length === 0) {
+                    documentsList.innerHTML = '<p class="text-muted">No documents uploaded yet.</p>';
+                    return;
+                }
+                
+                sortedDocuments.forEach(doc => {
+                    const docEl = document.createElement('div');
+                    docEl.className = `document-item ${doc.id === activeDocumentId ? 'active' : ''}`;
+                    docEl.setAttribute('data-document-id', doc.id);
+                    
+                    let statusClass = '';
+                    let statusText = '';
+                    
+                    switch (doc.status) {
+                        case 'processing':
+                            statusClass = 'status-processing';
+                            statusText = 'Processing';
+                            break;
+                        case 'completed':
+                            statusClass = 'status-completed';
+                            statusText = 'Ready';
+                            break;
+                        case 'failed':
+                            statusClass = 'status-failed';
+                            statusText = 'Failed';
+                            break;
+                        default:
+                            statusClass = 'status-processing';
+                            statusText = 'Unknown';
+                    }
+                    
+                    docEl.innerHTML = `
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <i class="fas fa-file-pdf me-2"></i>
+                                <span class="document-name">${doc.filename}</span>
+                            </div>
+                            <span class="document-status ${statusClass}">${statusText}</span>
+                        </div>
+                        <div class="small text-muted mt-1">
+                            ${new Date(doc.uploadedAt || doc.createdAt).toLocaleString()}
+                            ${doc.chunksCount ? `| ${doc.chunksCount} chunks` : ''}
+                        </div>
+                    `;
+                    
+                    docEl.addEventListener('click', () => {
+                        if (doc.status === 'completed') {
+                            selectDocument(doc.id);
+                        } else if (doc.status === 'failed') {
+                            alert(`This document failed processing: ${doc.error || 'Unknown error'}`);
+                        } else {
+                            alert('This document is still processing. Please wait until it completes.');
+                        }
+                    });
+                    
+                    documentsList.appendChild(docEl);
+                });
+                
+                // If we have at least one document, show the toggle button on mobile
+                toggleChatBtn.style.display = sortedDocuments.length > 0 ? 'block' : 'none';
+            }
+            
+            function selectDocument(documentId) {
+                // Validate document exists and is completed
+                if (!documents[documentId] || documents[documentId].status !== 'completed') {
+                    return;
+                }
+                
+                // Close previous WebSocket if exists
+                if (socket && socket.readyState === WebSocket.OPEN) {
+                    socket.close();
+                }
+                
+                // Update active document
+                activeDocumentId = documentId;
+                localStorage.setItem('activeDocument', documentId);
+                
+                // Update UI
+                renderDocumentsList();
+                
+                // Show chat section
+                chatSection.style.display = 'block';
+                
+                // Clear previous chat messages except the first greeting
+                while (messagesContainer.children.length > 1) {
+                    messagesContainer.removeChild(messagesContainer.lastChild);
+                }
+                
+                // Connect WebSocket
+                connectWebSocket(documentId);
+            }
+            
+            function connectWebSocket(documentId) {
+                // Use the provided WebSocket URL
+                const wsUrl = 'wss://127.0.0.1:9100/ws/chat';
+                
+                socket = new WebSocket(wsUrl);
+                
+                socket.onopen = function() {
+                    console.log('WebSocket connection established');
+                    
+                    // Send initialization message with document_id
+                    socket.send(JSON.stringify({
+                        document_id: documentId
+                    }));
+                };
+                
+                socket.onmessage = function(event) {
+                    const data = JSON.parse(event.data);
+                    
+                    if (data.status === 'initialized') {
+                        console.log('Chat session initialized:', data.message);
+                    } 
+                    else if (data.status === 'streaming') {
+                        // Get or create streaming message container
+                        let streamingMsg = document.querySelector('.bot-message.streaming');
+                        
+                        if (!streamingMsg) {
+                            // Remove typing indicator if exists
+                            const typingIndicator = document.querySelector('.typing-indicator');
+                            if (typingIndicator) {
+                                messagesContainer.removeChild(typingIndicator.parentNode);
+                            }
+                            
+                            // Create new message container
+                            streamingMsg = document.createElement('div');
+                            streamingMsg.className = 'message bot-message streaming';
+                            streamingMsg.innerHTML = '<p></p>';
+                            messagesContainer.appendChild(streamingMsg);
+                            
+                            // Scroll to bottom
+                            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                        }
+                        
+                        // Append token to message
+                        streamingMsg.querySelector('p').textContent += data.token;
+                        
+                        // Scroll to bottom occasionally (not on every token to improve performance)
+                        if (Math.random() < 0.1) {
+                            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                        }
+                    } 
+                    else if (data.status === 'complete') {
+                        // Remove streaming class to finalize message
+                        const streamingMsg = document.querySelector('.bot-message.streaming');
+                        if (streamingMsg) {
+                            streamingMsg.classList.remove('streaming');
+                        }
+                        
+                        // Scroll to bottom
+                        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                        
+                        // Enable input
+                        messageInput.disabled = false;
+                        sendMessageBtn.disabled = false;
+                    }
+                    else if (data.status === 'error') {
+                        // Show error message
+                        const errorMsg = document.createElement('div');
+                        errorMsg.className = 'message bot-message error';
+                        errorMsg.innerHTML = `<p>Error: ${data.error}</p>`;
+                        messagesContainer.appendChild(errorMsg);
+                        
+                        // Scroll to bottom
+                        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                        
+                        // Enable input
+                        messageInput.disabled = false;
+                        sendMessageBtn.disabled = false;
+                    }
+                };
+                
+                socket.onclose = function() {
+                    console.log('WebSocket connection closed');
+                };
+                
+                socket.onerror = function(error) {
+                    console.error('WebSocket error:', error);
+                    alert('Error connecting to chat service. Please try again later.');
+                };
+            }
+            
+            function sendMessage() {
+                const message = messageInput.value.trim();
+                
+                if (!message) return;
+                if (!activeDocumentId) return;
+                if (!socket || socket.readyState !== WebSocket.OPEN) {
+                    alert('Chat connection not established. Please try again later.');
+                    return;
+                }
+                
+                // Add user message to UI
+                const userMsgEl = document.createElement('div');
+                userMsgEl.className = 'message user-message';
+                userMsgEl.innerHTML = `<p>${escapeHtml(message)}</p>`;
+                messagesContainer.appendChild(userMsgEl);
+                
+                // Add typing indicator
+                const typingEl = document.createElement('div');
+                typingEl.className = 'message bot-message';
+                typingEl.innerHTML = `
+                    <div class="typing-indicator">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                `;
+                messagesContainer.appendChild(typingEl);
+                
+                // Scroll to bottom
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                
+                // Clear input
+                messageInput.value = '';
+                
+                // Disable input while waiting for response
+                messageInput.disabled = true;
+                sendMessageBtn.disabled = true;
+                
+                // Send message to WebSocket
+                socket.send(JSON.stringify({
+                    question: message
+                }));
+            }
+            
+            function saveDocuments() {
+                localStorage.setItem('documents', JSON.stringify(documents));
+            }
+            
+            function escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+            
+            // Handle responsive behavior
+            function handleResize() {
+                if (window.innerWidth < 768) {
+                    if (activeDocumentId) {
+                        toggleChatBtn.style.display = 'block';
+                    }
+                } else {
+                    // On larger screens, always show both sections
+                    if (activeDocumentId) {
+                        chatSection.style.display = 'block';
+                    }
+                }
+            }
+            
+            window.addEventListener('resize', handleResize);
+            handleResize(); // Initial check
+        });
+    </script>
+</body>
+</html>

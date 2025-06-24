@@ -1,0 +1,11 @@
+revesEnv
+__pycache__
+books.ipynb
+certificate.crt
+private.key
+models/__pycache__/
+utils/__pycache__/
+rag-vectordb/
+knowledge/
+temp_pdfs/
+.env
