@@ -14,7 +14,7 @@ class LLMModel:
                 temperature=config.TEMPERATURE,
                 google_api_key=config.GEMINI_API_KEY,
                 max_output_tokens=self.max_len,
-                # enable_automatic_function_calling=False
+                streaming=True
             )
         else:
             self.llm = ChatOpenAI(

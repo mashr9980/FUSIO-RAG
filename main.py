@@ -284,17 +284,17 @@ class RAGApplication:
         @self.app.websocket("/ws/chat")
         async def websocket_endpoint(websocket: WebSocket):
             await websocket.accept()
-        
+
             document_id = None
             is_initialized = False
             chat_history = []
             
             client_id = str(uuid.uuid4())
-        
+
             try:
                 init_data = await websocket.receive_text()
                 init_message = json.loads(init_data)
-        
+
                 document_id = init_message.get("document_id")
                 if not document_id:
                     await websocket.send_text(json.dumps({
@@ -302,11 +302,11 @@ class RAGApplication:
                         "error": "Missing document_id in initialization message."
                     }))
                     return
-        
+
                 if document_id not in self.active_connections:
                     self.active_connections[document_id] = {}
                 self.active_connections[document_id][client_id] = websocket
-        
+
                 status = self.document_store.get_document_status(document_id)
                 if not status:
                     await websocket.send_text(json.dumps({
@@ -314,14 +314,14 @@ class RAGApplication:
                         "error": "Document not found."
                     }))
                     return
-        
+
                 if status['status'] != "completed":
                     await websocket.send_text(json.dumps({
                         "status": "error",
                         "error": f"Document is not ready yet. (status: {status['status']})"
                     }))
                     return
-        
+
                 base_prompt = (
                     "You are a Fusio Assistant a Financial Planning Assistant, a knowledgeable and helpful AI specialized in the Four Bucket Financial System.\n"
                     "You must respond as a financial planning expert who is:\n"
@@ -378,59 +378,45 @@ class RAGApplication:
                     
                     "Respond naturally without using section headers or referencing this prompt structure."
                 )
-        
+
                 prompt_template = ChatPromptTemplate.from_messages([
                     ("system", base_prompt),
                     ("human", "{input}")
                 ])
-        
+
                 await websocket.send_text(json.dumps({
                     "status": "initialized",
                     "document_id": document_id,
                     "message": "Connection initialized successfully. You can now send questions."
                 }))
                 is_initialized = True
-        
+
                 while True:
                     try:
                         data = await websocket.receive_text()
-        
+
                         try:
                             message_data = json.loads(data)
                             question = message_data.get("question", data)
                         except json.JSONDecodeError:
                             question = data
-        
+
                         if not question or not isinstance(question, str):
                             await websocket.send_text(json.dumps({
                                 "status": "error",
                                 "error": "Invalid question format."
                             }))
                             continue
-        
+
                         with Timer() as timer:
                             context_chunks = await self.document_store.search(
                                 document_id,
                                 question,
                                 k=config.SIMILAR_DOCS_COUNT
                             )
-        
+
                             documents = [Document(page_content=chunk) for chunk in context_chunks]
                             retriever = get_static_retriever(documents)
-        
-                            class WebSocketCallbackHandler(BaseCallbackHandler):
-                                def __init__(self, websocket):
-                                    self.websocket = websocket
-                                    self.collected_tokens = ""
-                                    
-                                async def on_llm_new_token(self, token: str, **kwargs):
-                                    self.collected_tokens += token
-                                    await self.websocket.send_text(json.dumps({
-                                        "status": "streaming",
-                                        "token": token
-                                    }))
-                                        
-                            callback_handler = WebSocketCallbackHandler(websocket)
                             
                             formatted_chat_history = ""
                             for entry in chat_history:
@@ -439,34 +425,44 @@ class RAGApplication:
                             qa_chain = create_retrieval_chain(
                                 retriever,
                                 create_stuff_documents_chain(
-                                    self.llm_model.get_llm().with_config(
-                                        {"callbacks": [callback_handler]}
-                                    ),
+                                    self.llm_model.get_llm(),
                                     prompt_template
                                 )
                             )
-        
-                            result = await qa_chain.ainvoke({
-                                "input": question,
-                                "chat_history": formatted_chat_history,
-                                "context": "\n\n".join(context_chunks) if context_chunks else "(No relevant document context found)"
-                            })
-                            final_response = result.get("answer", "").strip()
-        
+
+                            collected_response = ""
+                            
+                            async for event in qa_chain.astream_events(
+                                {
+                                    "input": question,
+                                    "chat_history": formatted_chat_history,
+                                    "context": "\n\n".join(context_chunks) if context_chunks else "(No relevant document context found)"
+                                },
+                                version="v2"
+                            ):
+                                if event["event"] == "on_chat_model_stream":
+                                    token = event["data"]["chunk"].content
+                                    if token:
+                                        collected_response += token
+                                        await websocket.send_text(json.dumps({
+                                            "status": "streaming",
+                                            "token": token
+                                        }))
+
                             chat_history.append({
                                 "question": question,
-                                "answer": final_response
+                                "answer": collected_response
                             })
                             
                             if len(chat_history) > 10:
                                 chat_history = chat_history[-10:]
-        
+
                         await websocket.send_text(json.dumps({
                             "status": "complete",
-                            "answer": final_response,
+                            "answer": collected_response,
                             "time": timer.interval,
                         }))
-        
+
                     except WebSocketDisconnect:
                         logger.info(f"WebSocket disconnected (initialized: {is_initialized})")
                         break
@@ -476,7 +472,7 @@ class RAGApplication:
                             "status": "error",
                             "error": str(e)
                         }))
-        
+
             except WebSocketDisconnect:
                 logger.info(f"WebSocket disconnected before full initialization.")
             except Exception as e:
